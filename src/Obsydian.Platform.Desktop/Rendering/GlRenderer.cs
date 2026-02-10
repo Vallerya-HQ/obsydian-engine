@@ -72,12 +72,18 @@ public sealed class GlRenderer : IRenderer, IDisposable
             "Use InitializeWithGl(GL, int, int) to provide the Silk.NET GL context.");
     }
 
-    public void InitializeWithGl(GL gl, int width, int height)
+    /// <summary>
+    /// Initialize with separate framebuffer (pixel) and logical (point) dimensions.
+    /// On HiDPI/Retina displays these differ — framebuffer is typically 2x the logical size.
+    /// The viewport uses framebuffer pixels; the projection (coordinate system) uses logical dimensions.
+    /// </summary>
+    public void InitializeWithGl(GL gl, int framebufferWidth, int framebufferHeight, int logicalWidth, int logicalHeight)
     {
         _gl = gl;
-        _viewportWidth = width;
-        _viewportHeight = height;
+        _viewportWidth = framebufferWidth;
+        _viewportHeight = framebufferHeight;
 
+        _gl.Viewport(0, 0, (uint)framebufferWidth, (uint)framebufferHeight);
         _gl.Enable(EnableCap.Blend);
         _gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
 
@@ -85,7 +91,7 @@ public sealed class GlRenderer : IRenderer, IDisposable
         _batch = new SpriteBatch(_gl);
         _whitePixel = GlTexture.CreateWhitePixel(_gl);
 
-        _projection = Matrix4x4.CreateOrthographicOffCenter(0, width, height, 0, -1f, 1f);
+        _projection = Matrix4x4.CreateOrthographicOffCenter(0, logicalWidth, logicalHeight, 0, -1f, 1f);
 
         _shader.Use();
         _shader.SetUniform("uTexture", 0);
@@ -95,19 +101,26 @@ public sealed class GlRenderer : IRenderer, IDisposable
         _font = BuiltinFont.Create(_gl);
 
         Log.Info("Renderer", $"OpenGL {_gl.GetStringS(StringName.Version)}");
-        Log.Info("Renderer", $"Viewport: {width}x{height}");
+        Log.Info("Renderer", $"Viewport: {framebufferWidth}x{framebufferHeight}, Logical: {logicalWidth}x{logicalHeight}");
     }
+
+    /// <summary>
+    /// Initialize assuming logical size equals framebuffer size (non-HiDPI displays).
+    /// </summary>
+    public void InitializeWithGl(GL gl, int width, int height) => InitializeWithGl(gl, width, height, width, height);
 
     /// <summary>The built-in pixel font. Available after InitializeWithGl().</summary>
     public BitmapFont? Font => _font;
 
-    public void OnResize(int width, int height)
+    public void OnResize(int framebufferWidth, int framebufferHeight, int logicalWidth, int logicalHeight)
     {
-        _viewportWidth = width;
-        _viewportHeight = height;
-        _gl.Viewport(0, 0, (uint)width, (uint)height);
-        _projection = Matrix4x4.CreateOrthographicOffCenter(0, width, height, 0, -1f, 1f);
+        _viewportWidth = framebufferWidth;
+        _viewportHeight = framebufferHeight;
+        _gl.Viewport(0, 0, (uint)framebufferWidth, (uint)framebufferHeight);
+        _projection = Matrix4x4.CreateOrthographicOffCenter(0, logicalWidth, logicalHeight, 0, -1f, 1f);
     }
+
+    public void OnResize(int width, int height) => OnResize(width, height, width, height);
 
     public void BeginFrame()
     {
@@ -198,8 +211,12 @@ public sealed class GlRenderer : IRenderer, IDisposable
 
     public void SetCamera(Vec2 position, float zoom = 1f)
     {
+        // Flush any queued sprites drawn with the previous view matrix
+        _batch.Flush();
+
         _view = Matrix4x4.CreateTranslation(-position.X, -position.Y, 0) *
                 Matrix4x4.CreateScale(zoom, zoom, 1f);
+        _shader.SetUniform("uView", _view);
     }
 
     public void Shutdown()
