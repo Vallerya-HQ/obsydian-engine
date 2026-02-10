@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Obsydian.Audio</RootNamespace>
+    <Description>Audio playback and management system.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Obsydian.Core\Obsydian.Core.csproj" />
+    <ProjectReference Include="..\Obsydian.Platform\Obsydian.Platform.csproj" />
+  </ItemGroup>
+</Project>

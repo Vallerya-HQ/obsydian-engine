@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Obsydian.UI</RootNamespace>
+    <Description>UI framework for menus, HUD, and in-game interfaces.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Obsydian.Core\Obsydian.Core.csproj" />
+    <ProjectReference Include="..\Obsydian.Graphics\Obsydian.Graphics.csproj" />
+    <ProjectReference Include="..\Obsydian.Input\Obsydian.Input.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Obsydian.Physics</RootNamespace>
+    <Description>2D physics and collision detection system.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Obsydian.Core\Obsydian.Core.csproj" />
+  </ItemGroup>
+</Project>

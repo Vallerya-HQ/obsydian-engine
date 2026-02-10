@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Obsydian.Serialization</RootNamespace>
+    <Description>Save/load system with versioned serialization and migration support.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Obsydian.Core\Obsydian.Core.csproj" />
+  </ItemGroup>
+</Project>

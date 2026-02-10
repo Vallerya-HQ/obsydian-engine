@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Obsydian.Input</RootNamespace>
+    <Description>Input handling system for keyboard, mouse, and gamepad.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Obsydian.Core\Obsydian.Core.csproj" />
+    <ProjectReference Include="..\Obsydian.Platform\Obsydian.Platform.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Obsydian.Network</RootNamespace>
+    <Description>Networking and multiplayer synchronization system.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Obsydian.Core\Obsydian.Core.csproj" />
+    <ProjectReference Include="..\Obsydian.Serialization\Obsydian.Serialization.csproj" />
+  </ItemGroup>
+</Project>

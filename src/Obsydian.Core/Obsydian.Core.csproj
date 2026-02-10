@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Obsydian.Core</RootNamespace>
+    <Description>Core module for the Obsydian Game Engine — ECS, math, events, and utilities.</Description>
+  </PropertyGroup>
+</Project>

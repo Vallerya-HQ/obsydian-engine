@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Obsydian.Graphics</RootNamespace>
+    <Description>Rendering and graphics system for the Obsydian Game Engine.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Obsydian.Core\Obsydian.Core.csproj" />
+    <ProjectReference Include="..\Obsydian.Platform\Obsydian.Platform.csproj" />
+  </ItemGroup>
+</Project>

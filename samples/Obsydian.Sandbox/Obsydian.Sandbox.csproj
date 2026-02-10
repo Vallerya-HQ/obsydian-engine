@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Obsydian.Sandbox</RootNamespace>
+    <Description>Sandbox project for testing and prototyping engine features.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Obsydian.Core\Obsydian.Core.csproj" />
+    <ProjectReference Include="..\..\src\Obsydian.Graphics\Obsydian.Graphics.csproj" />
+    <ProjectReference Include="..\..\src\Obsydian.Input\Obsydian.Input.csproj" />
+    <ProjectReference Include="..\..\src\Obsydian.Audio\Obsydian.Audio.csproj" />
+    <ProjectReference Include="..\..\src\Obsydian.Physics\Obsydian.Physics.csproj" />
+    <ProjectReference Include="..\..\src\Obsydian.Content\Obsydian.Content.csproj" />
+    <ProjectReference Include="..\..\src\Obsydian.UI\Obsydian.UI.csproj" />
+    <ProjectReference Include="..\..\src\Obsydian.Network\Obsydian.Network.csproj" />
+    <ProjectReference Include="..\..\src\Obsydian.Serialization\Obsydian.Serialization.csproj" />
+    <ProjectReference Include="..\..\src\Obsydian.Platform\Obsydian.Platform.csproj" />
+  </ItemGroup>
+</Project>
