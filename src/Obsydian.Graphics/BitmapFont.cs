@@ -61,6 +61,56 @@ public sealed class BitmapFont
     }
 
     /// <summary>
+    /// Word-wrap text to fit within maxWidth pixels at the given scale.
+    /// Inserts newline characters at word boundaries. Preserves existing newlines.
+    /// </summary>
+    public string WrapText(string text, float maxWidth, float scale = 1f)
+    {
+        if (string.IsNullOrEmpty(text) || maxWidth <= 0) return text;
+
+        var result = new System.Text.StringBuilder();
+        var paragraphs = text.Split('\n');
+
+        for (int p = 0; p < paragraphs.Length; p++)
+        {
+            if (p > 0) result.Append('\n');
+
+            var words = paragraphs[p].Split(' ');
+            float lineWidth = 0;
+            float spaceWidth = (GetGlyph(' ').XAdvance + Spacing) * scale;
+            bool firstOnLine = true;
+
+            foreach (var word in words)
+            {
+                if (word.Length == 0) continue;
+
+                float wordWidth = 0;
+                foreach (var c in word)
+                    wordWidth += (GetGlyph(c).XAdvance + Spacing) * scale;
+
+                if (!firstOnLine && lineWidth + spaceWidth + wordWidth > maxWidth)
+                {
+                    result.Append('\n');
+                    lineWidth = 0;
+                    firstOnLine = true;
+                }
+
+                if (!firstOnLine)
+                {
+                    result.Append(' ');
+                    lineWidth += spaceWidth;
+                }
+
+                result.Append(word);
+                lineWidth += wordWidth;
+                firstOnLine = false;
+            }
+        }
+
+        return result.ToString();
+    }
+
+    /// <summary>
     /// Draw text using the given renderer. Call within BeginFrame/EndFrame.
     /// </summary>
     public void DrawString(IRenderer renderer, string text, Vec2 position, Color color, float scale = 1f)

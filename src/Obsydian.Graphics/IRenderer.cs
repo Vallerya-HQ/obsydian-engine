@@ -16,6 +16,7 @@ public interface IRenderer
     void DrawRect(Rect rect, Color color, bool filled = true);
     void DrawLine(Vec2 start, Vec2 end, Color color, float thickness = 1f);
     void DrawText(string text, Vec2 position, Color color, float scale = 1f);
+    string WrapText(string text, float maxWidth, float scale = 1f);
 
     void SetCamera(Vec2 position, float zoom = 1f);
     void Shutdown();

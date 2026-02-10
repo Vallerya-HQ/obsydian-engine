@@ -10,6 +10,7 @@
     <ProjectReference Include="..\Obsydian.Content\Obsydian.Content.csproj" />
     <ProjectReference Include="..\Obsydian.Graphics\Obsydian.Graphics.csproj" />
     <ProjectReference Include="..\Obsydian.Input\Obsydian.Input.csproj" />
+    <ProjectReference Include="..\Obsydian.Audio\Obsydian.Audio.csproj" />
     <ProjectReference Include="..\Obsydian.Platform\Obsydian.Platform.csproj" />
   </ItemGroup>
 
@@ -17,6 +18,8 @@
     <PackageReference Include="Silk.NET.Windowing" Version="2.21.0" />
     <PackageReference Include="Silk.NET.Input" Version="2.21.0" />
     <PackageReference Include="Silk.NET.OpenGL" Version="2.21.0" />
+    <PackageReference Include="Silk.NET.OpenAL" Version="2.21.0" />
+    <PackageReference Include="Silk.NET.OpenAL.Soft.Native" Version="1.23.1" />
     <PackageReference Include="StbImageSharp" Version="2.27.14" />
   </ItemGroup>
 </Project>

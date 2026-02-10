@@ -12,6 +12,9 @@ public sealed class ContentManager : IDisposable
     private readonly Dictionary<Type, IAssetLoader> _loaders = [];
     private readonly string _rootPath;
 
+    /// <summary>The root content directory path.</summary>
+    public string RootPath => _rootPath;
+
     public ContentManager(string rootPath)
     {
         _rootPath = rootPath;

@@ -32,6 +32,9 @@ public sealed class InputManager
     public Vec2 MouseDelta { get; private set; }
     public float ScrollDelta { get; private set; }
 
+    /// <summary>Gamepad state (first connected controller).</summary>
+    public GamepadState Gamepad { get; } = new();
+
     public bool IsKeyDown(Key key) => _heldKeys.Contains(key);
     public bool IsKeyUp(Key key) => !_heldKeys.Contains(key);
     public bool IsKeyPressed(Key key) => _pressedThisFrame.Contains(key);
@@ -54,6 +57,7 @@ public sealed class InputManager
         _releasedMouseThisFrame.Clear();
         MouseDelta = Vec2.Zero;
         ScrollDelta = 0;
+        Gamepad.BeginFrame();
     }
 
     // Called by the platform layer (SilkInputBridge) as events arrive

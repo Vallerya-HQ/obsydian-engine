@@ -152,4 +152,41 @@ public sealed class Tilemap
         }
         return false;
     }
+
+    // --- Object data (from Tiled object layers) ---
+
+    private readonly Dictionary<string, List<TilemapObject>> _objectData = [];
+
+    /// <summary>Store an object from a Tiled object layer.</summary>
+    public void SetObjectData(string layerName, TilemapObject obj)
+    {
+        if (!_objectData.TryGetValue(layerName, out var list))
+        {
+            list = [];
+            _objectData[layerName] = list;
+        }
+        list.Add(obj);
+    }
+
+    /// <summary>Get all objects for a named object layer.</summary>
+    public IReadOnlyList<TilemapObject> GetObjects(string layerName) =>
+        _objectData.GetValueOrDefault(layerName) ?? (IReadOnlyList<TilemapObject>)[];
+
+    /// <summary>Find objects by type across all layers.</summary>
+    public IEnumerable<TilemapObject> FindObjectsByType(string type) =>
+        _objectData.Values.SelectMany(list => list).Where(o => o.Type == type);
+}
+
+/// <summary>
+/// An object from a Tiled object layer. Used for spawn points, warps, triggers, etc.
+/// </summary>
+public sealed record TilemapObject(
+    string Name,
+    string Type,
+    Vec2 Position,
+    Vec2 Size,
+    Dictionary<string, string> Properties)
+{
+    public string GetProperty(string key, string defaultValue = "") =>
+        Properties.GetValueOrDefault(key, defaultValue);
 }

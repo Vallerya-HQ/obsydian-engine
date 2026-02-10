@@ -11,6 +11,12 @@ public sealed class SaveManager
     private readonly string _saveDirectory;
     private readonly JsonSerializerOptions _options;
 
+    /// <summary>Current save version. Incremented when save format changes.</summary>
+    public int CurrentVersion { get; set; } = 1;
+
+    /// <summary>Optional migration chain for upgrading old saves.</summary>
+    public SaveMigrationChain? MigrationChain { get; set; }
+
     public SaveManager(string saveDirectory)
     {
         _saveDirectory = saveDirectory;
@@ -27,14 +33,14 @@ public sealed class SaveManager
         var path = GetSavePath(slotName);
         var wrapper = new SaveWrapper<T>
         {
-            Version = 1,
+            Version = CurrentVersion,
             Timestamp = DateTime.UtcNow,
             Data = data
         };
 
         var json = JsonSerializer.Serialize(wrapper, _options);
         File.WriteAllText(path, json);
-        Log.Info("Save", $"Saved to {slotName}");
+        Log.Info("Save", $"Saved to {slotName} (v{CurrentVersion})");
     }
 
     public T? Load<T>(string slotName) where T : class
@@ -47,6 +53,33 @@ public sealed class SaveManager
         }
 
         var json = File.ReadAllText(path);
+
+        // Check version and migrate if needed
+        if (MigrationChain is not null)
+        {
+            var versionDoc = JsonSerializer.Deserialize<SaveVersionCheck>(json, _options);
+            if (versionDoc is not null && versionDoc.Version < CurrentVersion)
+            {
+                Log.Info("Save", $"Migrating {slotName} from v{versionDoc.Version} to v{CurrentVersion}");
+
+                // Extract data section, migrate, then re-wrap
+                var dataElement = JsonSerializer.Deserialize<JsonElement>(json, _options);
+                if (dataElement.TryGetProperty("data", out var dataProp))
+                {
+                    var dataJson = dataProp.GetRawText();
+                    var migratedJson = MigrationChain.MigrateToLatest(dataJson, versionDoc.Version);
+
+                    // Rebuild wrapper with migrated data
+                    var migratedWrapper = $"{{\"version\":{CurrentVersion},\"timestamp\":\"{DateTime.UtcNow:O}\",\"data\":{migratedJson}}}";
+                    json = migratedWrapper;
+
+                    // Save migrated version back to disk
+                    File.WriteAllText(path, json);
+                    Log.Info("Save", $"Migration complete, saved updated file.");
+                }
+            }
+        }
+
         var wrapper = JsonSerializer.Deserialize<SaveWrapper<T>>(json, _options);
         Log.Info("Save", $"Loaded {slotName} (v{wrapper?.Version})");
         return wrapper?.Data;
@@ -79,4 +112,9 @@ internal sealed class SaveWrapper<T>
     public int Version { get; set; }
     public DateTime Timestamp { get; set; }
     public T? Data { get; set; }
+}
+
+internal sealed class SaveVersionCheck
+{
+    public int Version { get; set; }
 }

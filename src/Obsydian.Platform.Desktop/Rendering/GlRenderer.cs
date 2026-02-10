@@ -209,6 +209,11 @@ public sealed class GlRenderer : IRenderer, IDisposable
         _font?.DrawString(this, text, position, color, scale);
     }
 
+    public string WrapText(string text, float maxWidth, float scale = 1f)
+    {
+        return _font?.WrapText(text, maxWidth, scale) ?? text;
+    }
+
     public void SetCamera(Vec2 position, float zoom = 1f)
     {
         // Flush any queued sprites drawn with the previous view matrix
