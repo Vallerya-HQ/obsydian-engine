@@ -154,6 +154,12 @@ public sealed class World
 
     public int EntityCount => _alive.Count;
 
+    /// <summary>Returns all registered component types and their stores (for tooling/reflection).</summary>
+    public IReadOnlyDictionary<Type, object> Stores => _stores;
+
+    /// <summary>Returns all alive entity IDs (for tooling/enumeration).</summary>
+    public IReadOnlyCollection<int> AliveEntityIds => _alive;
+
     private ComponentStore<T> GetOrCreateStore<T>() where T : struct, IComponent
     {
         var type = typeof(T);

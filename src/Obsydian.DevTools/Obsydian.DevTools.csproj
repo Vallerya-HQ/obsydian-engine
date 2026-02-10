@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Obsydian.DevTools</RootNamespace>
+    <Description>Dear ImGui-based developer tools overlay for the Obsydian engine.</Description>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Obsydian.Core\Obsydian.Core.csproj" />
+    <ProjectReference Include="..\Obsydian.Graphics\Obsydian.Graphics.csproj" />
+    <ProjectReference Include="..\Obsydian.Input\Obsydian.Input.csproj" />
+    <ProjectReference Include="..\Obsydian.Platform.Desktop\Obsydian.Platform.Desktop.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Silk.NET.OpenGL.Extensions.ImGui" Version="2.21.0" />
+  </ItemGroup>
+</Project>
