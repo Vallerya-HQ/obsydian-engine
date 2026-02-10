@@ -43,6 +43,36 @@ public sealed class ContentManager : IDisposable
         return asset;
     }
 
+    /// <summary>
+    /// Asynchronously load an asset. Uses IAsyncAssetLoader if available, otherwise wraps sync load.
+    /// </summary>
+    public async Task<T> LoadAsync<T>(string assetPath, CancellationToken ct = default) where T : class
+    {
+        var key = $"{typeof(T).Name}:{assetPath}";
+
+        if (_cache.TryGetValue(key, out var cached))
+            return (T)cached;
+
+        if (!_loaders.TryGetValue(typeof(T), out var loader))
+            throw new InvalidOperationException($"No loader registered for type {typeof(T).Name}");
+
+        var fullPath = Path.Combine(_rootPath, assetPath);
+
+        T asset;
+        if (loader is IAsyncAssetLoader<T> asyncLoader)
+        {
+            asset = await asyncLoader.LoadAsync(fullPath, ct);
+        }
+        else
+        {
+            asset = await Task.Run(() => ((IAssetLoader<T>)loader).Load(fullPath), ct);
+        }
+
+        _cache[key] = asset;
+        Log.Debug("Content", $"Loaded async {typeof(T).Name}: {assetPath}");
+        return asset;
+    }
+
     public void Unload(string assetPath)
     {
         var keysToRemove = _cache.Keys.Where(k => k.EndsWith($":{assetPath}")).ToList();

@@ -209,6 +209,14 @@ public sealed class GlRenderer : IRenderer, IDisposable
         _font?.DrawString(this, text, position, color, scale);
     }
 
+    public void DrawTextBatch(Texture fontTexture, ReadOnlySpan<GlyphQuad> glyphs, Color color)
+    {
+        foreach (var glyph in glyphs)
+        {
+            _batch.Draw(fontTexture, glyph.Dest, glyph.Source, color);
+        }
+    }
+
     public string WrapText(string text, float maxWidth, float scale = 1f)
     {
         return _font?.WrapText(text, maxWidth, scale) ?? text;

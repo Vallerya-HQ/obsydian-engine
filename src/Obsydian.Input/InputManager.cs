@@ -20,6 +20,11 @@ public enum MouseButton { Left, Right, Middle }
 /// </summary>
 public sealed class InputManager
 {
+    public InputManager()
+    {
+        Actions.Attach(this);
+    }
+
     private readonly HashSet<Key> _heldKeys = [];
     private readonly HashSet<Key> _pressedThisFrame = [];
     private readonly HashSet<Key> _releasedThisFrame = [];
@@ -34,6 +39,9 @@ public sealed class InputManager
 
     /// <summary>Gamepad state (first connected controller).</summary>
     public GamepadState Gamepad { get; } = new();
+
+    /// <summary>Action mapping system for input abstraction and rebinding.</summary>
+    public ActionMap Actions { get; } = new();
 
     public bool IsKeyDown(Key key) => _heldKeys.Contains(key);
     public bool IsKeyUp(Key key) => !_heldKeys.Contains(key);

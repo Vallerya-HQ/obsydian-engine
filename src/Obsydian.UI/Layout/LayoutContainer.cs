@@ -28,6 +28,8 @@ public sealed class StackContainer : UIElement
     public LayoutDirection Direction { get; set; } = LayoutDirection.Vertical;
     public float Spacing { get; set; } = 4f;
     public float Padding { get; set; } = 8f;
+    public HorizontalAlignment ChildHorizontalAlignment { get; set; } = HorizontalAlignment.Stretch;
+    public VerticalAlignment ChildVerticalAlignment { get; set; } = VerticalAlignment.Start;
 
     public override void Update(float deltaTime, InputManager input)
     {
@@ -50,24 +52,41 @@ public sealed class StackContainer : UIElement
             if (!child.Visible) continue;
 
             var childBounds = child.Bounds;
+            var margin = child.Margin;
 
             if (Direction == LayoutDirection.Vertical)
             {
-                child.Bounds = new Rect(
-                    Bounds.X + Padding,
-                    Bounds.Y + offset,
-                    Bounds.Width - Padding * 2,
-                    childBounds.Height);
-                offset += childBounds.Height + Spacing;
+                float availWidth = Bounds.Width - Padding * 2 - margin.TotalHorizontal;
+                float childWidth = child.HorizontalAlignment == HorizontalAlignment.Stretch
+                    ? System.Math.Clamp(availWidth, child.MinSize.X, child.MaxSize.X)
+                    : System.Math.Clamp(childBounds.Width, child.MinSize.X, child.MaxSize.X);
+
+                float x = child.HorizontalAlignment switch
+                {
+                    HorizontalAlignment.Center => Bounds.X + Padding + margin.Left + (availWidth - childWidth) / 2,
+                    HorizontalAlignment.End => Bounds.X + Bounds.Width - Padding - margin.Right - childWidth,
+                    _ => Bounds.X + Padding + margin.Left
+                };
+
+                child.Bounds = new Rect(x, Bounds.Y + offset + margin.Top, childWidth, childBounds.Height);
+                offset += childBounds.Height + margin.TotalVertical + Spacing;
             }
             else
             {
-                child.Bounds = new Rect(
-                    Bounds.X + offset,
-                    Bounds.Y + Padding,
-                    childBounds.Width,
-                    Bounds.Height - Padding * 2);
-                offset += childBounds.Width + Spacing;
+                float availHeight = Bounds.Height - Padding * 2 - margin.TotalVertical;
+                float childHeight = child.VerticalAlignment == VerticalAlignment.Stretch
+                    ? System.Math.Clamp(availHeight, child.MinSize.Y, child.MaxSize.Y)
+                    : System.Math.Clamp(childBounds.Height, child.MinSize.Y, child.MaxSize.Y);
+
+                float y = child.VerticalAlignment switch
+                {
+                    VerticalAlignment.Center => Bounds.Y + Padding + margin.Top + (availHeight - childHeight) / 2,
+                    VerticalAlignment.End => Bounds.Y + Bounds.Height - Padding - margin.Bottom - childHeight,
+                    _ => Bounds.Y + Padding + margin.Top
+                };
+
+                child.Bounds = new Rect(Bounds.X + offset + margin.Left, y, childBounds.Width, childHeight);
+                offset += childBounds.Width + margin.TotalHorizontal + Spacing;
             }
         }
     }

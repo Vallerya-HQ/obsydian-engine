@@ -111,10 +111,16 @@ public sealed class BitmapFont
     }
 
     /// <summary>
-    /// Draw text using the given renderer. Call within BeginFrame/EndFrame.
+    /// Draw text using the given renderer. Uses batched glyph submission for performance.
+    /// Call within BeginFrame/EndFrame.
     /// </summary>
     public void DrawString(IRenderer renderer, string text, Vec2 position, Color color, float scale = 1f)
     {
+        if (string.IsNullOrEmpty(text)) return;
+
+        // Pre-compute glyph quads
+        var quads = new GlyphQuad[text.Length];
+        int quadCount = 0;
         float cursorX = position.X;
         float cursorY = position.Y;
 
@@ -130,14 +136,15 @@ public sealed class BitmapFont
             var glyph = GetGlyph(c);
             if (glyph.SourceRect.Width > 0)
             {
-                renderer.DrawSprite(Texture,
-                    new Vec2(cursorX, cursorY),
-                    glyph.SourceRect,
-                    new Vec2(scale, scale),
-                    tint: color);
+                var dest = new Rect(cursorX, cursorY,
+                    glyph.SourceRect.Width * scale, glyph.SourceRect.Height * scale);
+                quads[quadCount++] = new GlyphQuad(dest, glyph.SourceRect);
             }
 
             cursorX += (glyph.XAdvance + Spacing) * scale;
         }
+
+        if (quadCount > 0)
+            renderer.DrawTextBatch(Texture, quads.AsSpan(0, quadCount), color);
     }
 }

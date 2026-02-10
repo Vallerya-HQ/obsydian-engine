@@ -181,27 +181,47 @@ public sealed class OpenAlAudioEngine : IAudioEngine
 
         try
         {
-            var wav = WavReader.Read(fullPath);
-            var format = (wav.Channels, wav.BitsPerSample) switch
+            var ext = Path.GetExtension(fullPath).ToLowerInvariant();
+            byte[] pcmData;
+            int channels, sampleRate, bitsPerSample;
+
+            if (ext == ".ogg")
+            {
+                var decoded = OggDecoder.Decode(fullPath);
+                pcmData = decoded.PcmData;
+                channels = decoded.Channels;
+                sampleRate = decoded.SampleRate;
+                bitsPerSample = decoded.BitsPerSample;
+            }
+            else
+            {
+                var wav = WavReader.Read(fullPath);
+                pcmData = wav.PcmData;
+                channels = wav.Channels;
+                sampleRate = wav.SampleRate;
+                bitsPerSample = wav.BitsPerSample;
+            }
+
+            var format = (channels, bitsPerSample) switch
             {
                 (1, 8) => BufferFormat.Mono8,
                 (1, 16) => BufferFormat.Mono16,
                 (2, 8) => BufferFormat.Stereo8,
                 (2, 16) => BufferFormat.Stereo16,
-                _ => throw new NotSupportedException($"Unsupported WAV format: {wav.Channels}ch {wav.BitsPerSample}bit")
+                _ => throw new NotSupportedException($"Unsupported format: {channels}ch {bitsPerSample}bit")
             };
 
             var buffer = _al.GenBuffer();
             unsafe
             {
-                fixed (byte* ptr = wav.PcmData)
+                fixed (byte* ptr = pcmData)
                 {
-                    _al.BufferData(buffer, format, ptr, wav.PcmData.Length, wav.SampleRate);
+                    _al.BufferData(buffer, format, ptr, pcmData.Length, sampleRate);
                 }
             }
 
             _bufferCache[assetPath] = buffer;
-            Log.Debug("Audio", $"Loaded audio: {assetPath} ({wav.Channels}ch, {wav.SampleRate}Hz, {wav.BitsPerSample}bit)");
+            Log.Debug("Audio", $"Loaded audio: {assetPath} ({channels}ch, {sampleRate}Hz, {bitsPerSample}bit)");
             return buffer;
         }
         catch (Exception ex)

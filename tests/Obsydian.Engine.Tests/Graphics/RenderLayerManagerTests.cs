@@ -72,6 +72,7 @@ public class RenderLayerManagerTests
         public void DrawRect(Rect rect, Color color, bool filled = true) { }
         public void DrawLine(Vec2 start, Vec2 end, Color color, float thickness = 1f) { }
         public void DrawText(string text, Vec2 position, Color color, float scale = 1f) { }
+        public void DrawTextBatch(Texture fontTexture, ReadOnlySpan<GlyphQuad> glyphs, Color color) { }
         public string WrapText(string text, float maxWidth, float scale = 1f) => text;
         public void SetCamera(Vec2 position, float zoom = 1f) { }
         public void Shutdown() { }
