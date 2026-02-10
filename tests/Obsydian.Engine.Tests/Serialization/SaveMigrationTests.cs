@@ -123,9 +123,145 @@ public class SaveMigrationTests
         }
     }
 
+    [Fact]
+    public void SaveManager_RoundTrip_PreservesComplexData()
+    {
+        var tmpDir = Path.Combine(Path.GetTempPath(), "obsydian_test_" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var mgr = new SaveManager(tmpDir);
+            var data = new ComplexTestData
+            {
+                Name = "Hero",
+                Score = 42,
+                Ratio = 3.14f,
+                Items = ["Sword", "Shield", "Potion"]
+            };
+
+            mgr.Save("complex", data);
+            var loaded = mgr.Load<ComplexTestData>("complex");
+
+            Assert.NotNull(loaded);
+            Assert.Equal("Hero", loaded.Name);
+            Assert.Equal(42, loaded.Score);
+            Assert.Equal(3.14f, loaded.Ratio);
+            Assert.Equal(3, loaded.Items.Count);
+            Assert.Equal("Shield", loaded.Items[1]);
+        }
+        finally
+        {
+            if (Directory.Exists(tmpDir))
+                Directory.Delete(tmpDir, true);
+        }
+    }
+
+    [Fact]
+    public void SaveManager_ListSaves_ReturnsSlotNames()
+    {
+        var tmpDir = Path.Combine(Path.GetTempPath(), "obsydian_test_" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var mgr = new SaveManager(tmpDir);
+            mgr.Save("slot_a", new TestData { Name = "A" });
+            mgr.Save("slot_b", new TestData { Name = "B" });
+
+            var saves = mgr.ListSaves().OrderBy(s => s).ToList();
+
+            Assert.Equal(2, saves.Count);
+            Assert.Equal("slot_a", saves[0]);
+            Assert.Equal("slot_b", saves[1]);
+        }
+        finally
+        {
+            if (Directory.Exists(tmpDir))
+                Directory.Delete(tmpDir, true);
+        }
+    }
+
+    [Fact]
+    public void SaveManager_Delete_RemovesSave()
+    {
+        var tmpDir = Path.Combine(Path.GetTempPath(), "obsydian_test_" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var mgr = new SaveManager(tmpDir);
+            mgr.Save("doomed", new TestData { Name = "X" });
+            Assert.True(mgr.Exists("doomed"));
+
+            mgr.Delete("doomed");
+
+            Assert.False(mgr.Exists("doomed"));
+            Assert.Null(mgr.Load<TestData>("doomed"));
+        }
+        finally
+        {
+            if (Directory.Exists(tmpDir))
+                Directory.Delete(tmpDir, true);
+        }
+    }
+
+    [Fact]
+    public void SaveManager_Load_NonExistentSlot_ReturnsNull()
+    {
+        var tmpDir = Path.Combine(Path.GetTempPath(), "obsydian_test_" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var mgr = new SaveManager(tmpDir);
+            var result = mgr.Load<TestData>("ghost_slot");
+            Assert.Null(result);
+        }
+        finally
+        {
+            if (Directory.Exists(tmpDir))
+                Directory.Delete(tmpDir, true);
+        }
+    }
+
+    [Fact]
+    public void SaveManager_MigratedLoad_AppliesChain()
+    {
+        var tmpDir = Path.Combine(Path.GetTempPath(), "obsydian_test_" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            // Save at version 1
+            var mgrV1 = new SaveManager(tmpDir) { CurrentVersion = 1 };
+            mgrV1.Save("migrated", new TestData { Name = "OldHero", Level = 5 });
+
+            // Load at version 2 with migration chain
+            var chain = new SaveMigrationChain(2);
+            chain.Register(new V1ToV2Migrator());
+            var mgrV2 = new SaveManager(tmpDir) { CurrentVersion = 2, MigrationChain = chain };
+
+            var loaded = mgrV2.Load<MigratedTestData>("migrated");
+
+            Assert.NotNull(loaded);
+            Assert.Equal("OldHero", loaded.DisplayName); // "name" → "displayName"
+            Assert.Equal(5, loaded.Level);
+        }
+        finally
+        {
+            if (Directory.Exists(tmpDir))
+                Directory.Delete(tmpDir, true);
+        }
+    }
+
     public sealed class TestData
     {
         public string Name { get; set; } = "";
+        public int Level { get; set; }
+    }
+
+    public sealed class ComplexTestData
+    {
+        public string Name { get; set; } = "";
+        public int Score { get; set; }
+        public float Ratio { get; set; }
+        public List<string> Items { get; set; } = [];
+    }
+
+    public sealed class MigratedTestData
+    {
+        public string DisplayName { get; set; } = "";
         public int Level { get; set; }
     }
 }

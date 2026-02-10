@@ -22,5 +22,6 @@
     <ProjectReference Include="..\..\src\Obsydian.UI\Obsydian.UI.csproj" />
     <ProjectReference Include="..\..\src\Obsydian.Serialization\Obsydian.Serialization.csproj" />
     <ProjectReference Include="..\..\src\Obsydian.Content\Obsydian.Content.csproj" />
+    <ProjectReference Include="..\..\src\Obsydian.Audio\Obsydian.Audio.csproj" />
   </ItemGroup>
 </Project>

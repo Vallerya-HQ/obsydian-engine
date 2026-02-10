@@ -75,4 +75,32 @@ public class EngineLifecycleTests
         Assert.False(engine.IsRunning);
         engine.Shutdown();
     }
+
+    [Fact]
+    public void Run_ExecutesFullLifecycle_ThenStops()
+    {
+        var log = new List<string>();
+        var frameCount = 0;
+
+        var engine = new Engine(new EngineConfig { TargetFps = 1000 });
+        engine.OnInitialize += () => log.Add("init");
+        engine.OnUpdate += _ =>
+        {
+            log.Add("update");
+            frameCount++;
+            if (frameCount >= 3)
+                engine.Stop();
+        };
+        engine.OnRender += _ => log.Add("render");
+        engine.OnShutdown += () => log.Add("shutdown");
+
+        engine.Run();
+
+        Assert.Equal("init", log[0]);
+        Assert.Contains("update", log);
+        Assert.Contains("render", log);
+        Assert.Equal("shutdown", log[^1]);
+        Assert.True(frameCount >= 3);
+        Assert.False(engine.IsRunning);
+    }
 }
