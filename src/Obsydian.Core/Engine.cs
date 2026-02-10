@@ -7,6 +7,7 @@ namespace Obsydian.Core;
 /// <summary>
 /// The Obsydian Game Engine. Orchestrates the game loop, ECS world, and all subsystems.
 /// Games create an Engine instance, register systems, and call Run().
+/// For windowed rendering, use Initialize() + Update()/Render() driven by the platform window.
 /// </summary>
 public sealed class Engine
 {
@@ -36,6 +37,9 @@ public sealed class Engine
         Systems = new SystemScheduler(World);
     }
 
+    /// <summary>
+    /// Headless game loop with Thread.Sleep frame limiting. No window or rendering.
+    /// </summary>
     public void Run()
     {
         Log.Info("Engine", $"Obsydian Engine v{Config.Version} starting...");
@@ -66,14 +70,45 @@ public sealed class Engine
         Shutdown();
     }
 
+    /// <summary>
+    /// Initializes the engine for externally-driven loop (window event loop).
+    /// Call this once, then call Update()/Render() from the window's callbacks.
+    /// </summary>
+    public void Initialize()
+    {
+        Log.Info("Engine", $"Obsydian Engine v{Config.Version} starting...");
+        IsRunning = true;
+        Time.Start();
+        OnInitialize?.Invoke();
+    }
+
+    /// <summary>
+    /// Runs one update tick. Called by the platform window's update callback.
+    /// </summary>
+    public void Update(float deltaTime)
+    {
+        Time.Tick();
+        OnUpdate?.Invoke(Time.DeltaTime);
+        Systems.UpdateAll(Time.DeltaTime);
+    }
+
+    /// <summary>
+    /// Runs one render tick. Called by the platform window's render callback.
+    /// </summary>
+    public void Render(float deltaTime)
+    {
+        OnRender?.Invoke(deltaTime);
+    }
+
     public void Stop()
     {
         IsRunning = false;
     }
 
-    private void Shutdown()
+    public void Shutdown()
     {
         Log.Info("Engine", "Shutting down...");
+        IsRunning = false;
         OnShutdown?.Invoke();
         Systems.ShutdownAll();
         Events.Clear();
