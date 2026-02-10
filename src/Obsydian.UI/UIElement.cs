@@ -1,4 +1,6 @@
 using Obsydian.Core.Math;
+using Obsydian.Graphics;
+using Obsydian.Input;
 
 namespace Obsydian.UI;
 
@@ -30,6 +32,17 @@ public abstract class UIElement
 
     public virtual bool HitTest(Vec2 point) => Visible && Bounds.Contains(point);
 
-    public abstract void Update(float deltaTime);
-    public abstract void Draw();
+    public virtual void Update(float deltaTime, InputManager input)
+    {
+        if (!Visible) return;
+        foreach (var child in _children)
+            child.Update(deltaTime, input);
+    }
+
+    public virtual void Draw(IRenderer renderer)
+    {
+        if (!Visible) return;
+        foreach (var child in _children)
+            child.Draw(renderer);
+    }
 }

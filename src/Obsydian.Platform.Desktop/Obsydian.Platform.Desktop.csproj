@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Obsydian.Core\Obsydian.Core.csproj" />
+    <ProjectReference Include="..\Obsydian.Content\Obsydian.Content.csproj" />
     <ProjectReference Include="..\Obsydian.Graphics\Obsydian.Graphics.csproj" />
     <ProjectReference Include="..\Obsydian.Input\Obsydian.Input.csproj" />
     <ProjectReference Include="..\Obsydian.Platform\Obsydian.Platform.csproj" />

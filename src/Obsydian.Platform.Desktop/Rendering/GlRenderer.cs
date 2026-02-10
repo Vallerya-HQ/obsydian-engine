@@ -17,6 +17,7 @@ public sealed class GlRenderer : IRenderer, IDisposable
     private ShaderProgram _shader = null!;
     private SpriteBatch _batch = null!;
     private Texture _whitePixel = null!;
+    private BitmapFont? _font;
 
     private Matrix4x4 _projection;
     private Matrix4x4 _view = Matrix4x4.Identity;
@@ -91,9 +92,14 @@ public sealed class GlRenderer : IRenderer, IDisposable
         _shader.SetUniform("uProjection", _projection);
         _shader.SetUniform("uView", _view);
 
+        _font = BuiltinFont.Create(_gl);
+
         Log.Info("Renderer", $"OpenGL {_gl.GetStringS(StringName.Version)}");
         Log.Info("Renderer", $"Viewport: {width}x{height}");
     }
+
+    /// <summary>The built-in pixel font. Available after InitializeWithGl().</summary>
+    public BitmapFont? Font => _font;
 
     public void OnResize(int width, int height)
     {
@@ -187,8 +193,7 @@ public sealed class GlRenderer : IRenderer, IDisposable
 
     public void DrawText(string text, Vec2 position, Color color, float scale = 1f)
     {
-        // Text rendering requires a BitmapFont (Phase 5).
-        // For now, this is a no-op — text is silently skipped.
+        _font?.DrawString(this, text, position, color, scale);
     }
 
     public void SetCamera(Vec2 position, float zoom = 1f)
@@ -199,6 +204,7 @@ public sealed class GlRenderer : IRenderer, IDisposable
 
     public void Shutdown()
     {
+        _font?.Texture.Dispose();
         _whitePixel.Dispose();
         _batch.Dispose();
         _shader.Dispose();

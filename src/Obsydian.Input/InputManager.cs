@@ -16,54 +16,76 @@ public enum MouseButton { Left, Right, Middle }
 
 /// <summary>
 /// Tracks keyboard and mouse input state each frame.
-/// Supports "just pressed", "held", and "just released" queries.
+/// Uses event-buffered press/release detection that works with callback-driven input (Silk.NET/GLFW).
 /// </summary>
 public sealed class InputManager
 {
-    private readonly HashSet<Key> _currentKeys = [];
-    private readonly HashSet<Key> _previousKeys = [];
-    private readonly HashSet<MouseButton> _currentMouse = [];
-    private readonly HashSet<MouseButton> _previousMouse = [];
+    private readonly HashSet<Key> _heldKeys = [];
+    private readonly HashSet<Key> _pressedThisFrame = [];
+    private readonly HashSet<Key> _releasedThisFrame = [];
+
+    private readonly HashSet<MouseButton> _heldMouse = [];
+    private readonly HashSet<MouseButton> _pressedMouseThisFrame = [];
+    private readonly HashSet<MouseButton> _releasedMouseThisFrame = [];
 
     public Vec2 MousePosition { get; private set; }
     public Vec2 MouseDelta { get; private set; }
     public float ScrollDelta { get; private set; }
 
-    public bool IsKeyDown(Key key) => _currentKeys.Contains(key);
-    public bool IsKeyUp(Key key) => !_currentKeys.Contains(key);
-    public bool IsKeyPressed(Key key) => _currentKeys.Contains(key) && !_previousKeys.Contains(key);
-    public bool IsKeyReleased(Key key) => !_currentKeys.Contains(key) && _previousKeys.Contains(key);
+    public bool IsKeyDown(Key key) => _heldKeys.Contains(key);
+    public bool IsKeyUp(Key key) => !_heldKeys.Contains(key);
+    public bool IsKeyPressed(Key key) => _pressedThisFrame.Contains(key);
+    public bool IsKeyReleased(Key key) => _releasedThisFrame.Contains(key);
 
-    public bool IsMouseDown(MouseButton button) => _currentMouse.Contains(button);
-    public bool IsMousePressed(MouseButton button) => _currentMouse.Contains(button) && !_previousMouse.Contains(button);
-    public bool IsMouseReleased(MouseButton button) => !_currentMouse.Contains(button) && _previousMouse.Contains(button);
+    public bool IsMouseDown(MouseButton button) => _heldMouse.Contains(button);
+    public bool IsMousePressed(MouseButton button) => _pressedMouseThisFrame.Contains(button);
+    public bool IsMouseReleased(MouseButton button) => _releasedMouseThisFrame.Contains(button);
 
     /// <summary>
-    /// Called at the start of each frame to snapshot the previous state.
+    /// Call at the start of each frame to clear per-frame press/release buffers.
+    /// Input events that arrive after this call (from platform polling) will be
+    /// detected as pressed/released for the current frame.
     /// </summary>
     public void BeginFrame()
     {
-        _previousKeys.Clear();
-        foreach (var key in _currentKeys)
-            _previousKeys.Add(key);
-
-        _previousMouse.Clear();
-        foreach (var button in _currentMouse)
-            _previousMouse.Add(button);
-
+        _pressedThisFrame.Clear();
+        _releasedThisFrame.Clear();
+        _pressedMouseThisFrame.Clear();
+        _releasedMouseThisFrame.Clear();
         MouseDelta = Vec2.Zero;
         ScrollDelta = 0;
     }
 
-    // These are called by the platform layer to feed raw input events
-    public void SetKeyDown(Key key) => _currentKeys.Add(key);
-    public void SetKeyUp(Key key) => _currentKeys.Remove(key);
-    public void SetMouseDown(MouseButton button) => _currentMouse.Add(button);
-    public void SetMouseUp(MouseButton button) => _currentMouse.Remove(button);
+    // Called by the platform layer (SilkInputBridge) as events arrive
+    public void SetKeyDown(Key key)
+    {
+        if (_heldKeys.Add(key))
+            _pressedThisFrame.Add(key);
+    }
+
+    public void SetKeyUp(Key key)
+    {
+        if (_heldKeys.Remove(key))
+            _releasedThisFrame.Add(key);
+    }
+
+    public void SetMouseDown(MouseButton button)
+    {
+        if (_heldMouse.Add(button))
+            _pressedMouseThisFrame.Add(button);
+    }
+
+    public void SetMouseUp(MouseButton button)
+    {
+        if (_heldMouse.Remove(button))
+            _releasedMouseThisFrame.Add(button);
+    }
+
     public void SetMousePosition(Vec2 position)
     {
         MouseDelta = position - MousePosition;
         MousePosition = position;
     }
+
     public void SetScrollDelta(float delta) => ScrollDelta = delta;
 }

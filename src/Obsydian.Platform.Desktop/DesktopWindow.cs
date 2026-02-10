@@ -21,6 +21,10 @@ public sealed class DesktopWindow : IWindow
 
     public int Width => _nativeWindow?.Size.X ?? 0;
     public int Height => _nativeWindow?.Size.Y ?? 0;
+
+    /// <summary>Framebuffer size in actual pixels (may differ from Width/Height on HiDPI/Retina).</summary>
+    public int FramebufferWidth => _nativeWindow?.FramebufferSize.X ?? 0;
+    public int FramebufferHeight => _nativeWindow?.FramebufferSize.Y ?? 0;
     public bool IsOpen => _nativeWindow is { IsClosing: false };
 
     public bool IsFullscreen
@@ -70,7 +74,7 @@ public sealed class DesktopWindow : IWindow
         _nativeWindow.Update += dt => OnUpdate?.Invoke(dt);
         _nativeWindow.Render += dt => OnRenderFrame?.Invoke(dt);
 
-        _nativeWindow.Resize += size =>
+        _nativeWindow.FramebufferResize += size =>
         {
             OnResize?.Invoke(size.X, size.Y);
         };
