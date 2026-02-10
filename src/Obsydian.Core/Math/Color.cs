@@ -12,6 +12,8 @@ public readonly record struct Color(byte R, byte G, byte B, byte A = 255)
     public static readonly Color Blue = new(0, 0, 255);
     public static readonly Color Transparent = new(0, 0, 0, 0);
     public static readonly Color CornflowerBlue = new(100, 149, 237);
+    public static readonly Color Gold = new(255, 215, 0);
+    public static readonly Color Magenta = new(255, 0, 255);
 
     public uint PackedValue => (uint)(R | (G << 8) | (B << 16) | (A << 24));
 
@@ -38,6 +40,9 @@ public readonly record struct Color(byte R, byte G, byte B, byte A = 255)
         (byte)(a.G + (b.G - a.G) * t),
         (byte)(a.B + (b.B - a.B) * t),
         (byte)(a.A + (b.A - a.A) * t));
+
+    /// <summary>Return a copy with modified alpha (0-255).</summary>
+    public Color WithAlpha(byte alpha) => new(R, G, B, alpha);
 
     public override string ToString() => $"#{R:X2}{G:X2}{B:X2}{(A < 255 ? A.ToString("X2") : "")}";
 }
